@@ -6,14 +6,19 @@ import org.jsoup.select.Elements;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class MainApplication {
     public static void main(String[] args) throws IOException {
-        checkList("list.csv");
+        PrintWriter printWriter = new PrintWriter(args[0] + "_result.html");
+        printWriter.println("<html lang=\"ru-RU\">\n<meta charset=\"UTF-8\">\n<head>\n</head>\n<body>");
+        checkList(args[0], printWriter);
+        printWriter.println("</body>\n</html>");
+        printWriter.close();
     }
 
-    private static void checkList(String fileName) throws IOException {
+    private static void checkList(String fileName, PrintWriter printWriter) throws IOException {
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -29,8 +34,10 @@ public class MainApplication {
                     " " +
                     list.get(2);
             for (String s : getNames(name))
-                if (s.contains(name.toLowerCase()))
-                    System.out.println(name);
+            {
+                if (s.toLowerCase().contains(name.toLowerCase()))
+                    printWriter.println(s);
+            }
         }
 
     }
@@ -56,7 +63,9 @@ public class MainApplication {
         Set<String> names = new HashSet<>();
         for (Element element : elements)
             for (Element element1 : element.getElementsByClass("simple-grid-grid-post-title"))
-                names.add(element1.select("a").text().toLowerCase());
+            {
+                names.add(element1.select("a").toString() + "<br>");
+            }
         for (int i = 2; i <= pagesCount; i++) {
             doc = Jsoup.connect("https://nemez1da.ru/page/" + i + "/?s=" + textRequest)
                     .userAgent("Chrome/4.0.249.0 Safari/532.5")
@@ -65,7 +74,9 @@ public class MainApplication {
             elements = doc.select("#simple-grid-posts-wrapper > div.simple-grid-posts-content > div.simple-grid-posts.simple-grid-posts-grid");
             for (Element element : elements)
                 for (Element element1 : element.getElementsByClass("simple-grid-grid-post-title"))
-                    names.add(element1.select("a").text().toLowerCase());
+                {
+                    names.add(element1.select("a").toString() + "<br>");
+                }
         }
         return names;
     }
@@ -82,7 +93,7 @@ public class MainApplication {
                 if (Integer.parseInt(element.text()) > result)
                     result = Integer.parseInt(element.text());
         } catch (Exception e) {
-            e.printStackTrace();
+
         }
         return result;
     }
